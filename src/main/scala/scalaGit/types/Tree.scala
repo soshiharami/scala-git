@@ -19,19 +19,33 @@ case class File(mode: Int, name: String, hash: Seq[Byte]) {
     }
   }
 
-  case class Tree(contents: Seq[File]) {
-    def fromTree(bytes: Seq[Byte]): Try[Tree] = {
-      Try {
-        val contents: Seq[File] = Seq()
-        val iter = bytes.split('\u0000').invert.toIterator
-
-        val header = iter.next()
-        val content = iter.foldLeft()
-      }
-    }
+  def encode(file: File): Seq[Byte] = {
+    val header = s"${file.mode} ${file.name}\u0000"
+    header.getBytes(StandardCharsets.UTF_8) :++ file.hash
   }
+}
 
-  def splitByte(bytes: Seq[Byte]) = {
-    ByteBuffer.wrap(bytes)
+case class Tree(contents: Seq[File]) {
+  def fromTree(bytes: Seq[Byte]): Try[Tree] = {
+    Try {
+      var contents: Seq[File] = Seq()
+      val iter = new String(bytes.toArray, StandardCharsets.UTF_8)
+        .split('\u0000')
+        .map { case string => string.getBytes(StandardCharsets.UTF_8) }
+        .toIterator
+
+      var header = iter.next()
+      contents = iter.foldLeft(contents) { (acc, x) =>
+        {
+          val (hash, next_header) = x.splitAt(20)
+          val file = File.fromFile(header, hash).get
+
+          acc.:+(file)
+          header = next_header
+          acc
+        }
+      }
+      Tree(contents)
+    }
   }
 }

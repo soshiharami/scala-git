@@ -9,7 +9,7 @@ case class File(mode: Int, name: String, hash: Seq[Byte]) {
     Try {
       val splitHeader = new String(header.toArray, StandardCharsets.UTF_8)
 
-      val iter = splitHeader.split("\\s").filter(_.nonEmpty).toIterator
+      val iter = splitHeader.split("\\s").filter(_.nonEmpty).iterator
 
       val mode = iter.next.toInt
 
@@ -32,7 +32,7 @@ case class Tree(contents: Seq[File]) {
       val iter = new String(bytes.toArray, StandardCharsets.UTF_8)
         .split('\u0000')
         .map { case string => string.getBytes(StandardCharsets.UTF_8) }
-        .toIterator
+        .iterator
 
       var header = iter.next()
       contents = iter.foldLeft(contents) { (acc, x) =>
@@ -51,7 +51,7 @@ case class Tree(contents: Seq[File]) {
 
   def asByte(tree: Tree): Seq[Byte] = {
     val content: Seq[Byte] =
-      contents.toIterator.flatMap(x => x.encode(x)).toSeq
+      contents.iterator.flatMap(x => x.encode(x)).toSeq
     val header = s"tree ${content.length}\u0000"
 
     header.getBytes(StandardCharsets.UTF_8) :++ content

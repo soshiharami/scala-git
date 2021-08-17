@@ -38,7 +38,7 @@ case class Tree(contents: Seq[File]) {
       contents = iter.foldLeft(contents) { (acc, x) =>
         {
           val (hash, next_header) = x.splitAt(20)
-          val file = File.fromFile(header, hash).get
+          val file = File(0, "", Seq()).fromFile(header, hash).get
 
           acc.:+(file)
           header = next_header

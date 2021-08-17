@@ -1,5 +1,6 @@
 package scalaGit.types
 
+import scalaGit.func.splitBytes.splitBytes
 import java.nio.charset.StandardCharsets
 import scala.util.Try
 import java.nio.ByteBuffer
@@ -29,11 +30,7 @@ case class Tree(contents: Seq[File]) {
   def fromTree(bytes: Seq[Byte]): Try[Tree] = {
     Try {
       var contents: Seq[File] = Seq()
-      val iter = new String(bytes.toArray, StandardCharsets.UTF_8)
-        .split('\u0000')
-        .map { case string => string.getBytes(StandardCharsets.UTF_8) }
-        .iterator
-
+      val iter = bytes.splitBytes("\u0000")
       var header = iter.next()
       contents = iter.foldLeft(contents) { (acc, x) =>
         {

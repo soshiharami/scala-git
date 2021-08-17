@@ -48,4 +48,12 @@ case class Tree(contents: Seq[File]) {
       Tree(contents)
     }
   }
+
+  def asByte(tree: Tree): Seq[Byte] = {
+    val content: Seq[Byte] =
+      contents.toIterator.flatMap(x => x.encode(x)).toSeq
+    val header = s"tree ${content.length}\u0000"
+
+    header.getBytes(StandardCharsets.UTF_8) :++ content
+  }
 }
